@@ -6,8 +6,8 @@
 class State
 {
 public:
-	bool Condition;
-	std::string Name;
+    bool Condition;
+    std::string Name;
 
-	State(std::string name);
+    State(std::string name);
 };

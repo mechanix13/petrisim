@@ -5,7 +5,7 @@
 
 ActionGate::ActionGate(State* input, State* output, std::string action = "")
 {
-	Action = action;
+    Action = action;
 }
 
 ActionGate::~ActionGate()
@@ -14,13 +14,13 @@ ActionGate::~ActionGate()
 
 void ActionGate::PerformFunc()
 {
-	bool funcVal;
-	std::stringstream act;
-	std::string buf;
+    bool funcVal;
+    std::stringstream act;
+    std::string buf;
 
-	int newVal = 0;
+    int newVal = 0;
 
-	act.str(Action.c_str());
-	act >> buf >> buf >> newVal;
-	OutputState->Condition = newVal;
+    act.str(Action.c_str());
+    act >> buf >> buf >> newVal;
+    OutputState->Condition = newVal;
 }

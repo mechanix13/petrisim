@@ -24,9 +24,9 @@
 struct token {
     std::string item;
     size_t      line,
-			    line_orig,
-			    pos,
-			    pos_orig;
+                line_orig,
+                pos,
+                pos_orig;
 };
 
 std::vector<Gate*> gates;
@@ -41,7 +41,7 @@ State* FalseCondition;
 void ltrim(std::string &s)
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-	    std::not1(std::ptr_fun<int, int>(std::isspace))));
+        std::not1(std::ptr_fun<int, int>(std::isspace))));
 }
 
 void clear_at_left(std::string &line) {
@@ -211,10 +211,10 @@ State* findState(std::string name)
 {
     for (int i = 0; i < states.size(); i++)
     {
-	    if (states[i]->Name == name)
-	    {
-		    return states[i];
-	    }
+        if (states[i]->Name == name)
+        {
+            return states[i];
+        }
     }
 
     return NULL;
@@ -227,78 +227,78 @@ void ReadFile(const char* fileName)
     std::vector<token> tokens = tokenize(fileName);
     for (int i = 0; i < tokens.size(); i++)
     {
-	    std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
+        std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
     }
-	
+    
     // TODO: walk around tokens
     for (int i = 0; i < tokens.size(); i++)
     {
-	    if (tokens[i].item == "input")
-	    {
-		    stateBuffer = new State(tokens[i + 1].item);
-		    states.push_back(stateBuffer);
-	    }
-	    if (tokens[i].item == "output")
-	    {
-		    stateBuffer = new State(tokens[i + 1].item);
-		    states.push_back(stateBuffer);
-	    }
-	    if (tokens[i].item == "initial")
-	    {
-		    findState(tokens[i + 1].item)->Condition = atoi(tokens[i + 3].item.c_str());
-	    }
-	    if (tokens[i].item == "always")
-	    {
-		    i += 2;
-		    stateBuffer = new State("alwaysOut");
-		    states.push_back(stateBuffer);
-		    gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
-		    i += 2;
-			
-		    if (tokens[i].item == "begin")
-		    {
-			    i++;
-			    while(tokens[i].item != "end")
-			    {
-				    if (tokens[i].item == "if")
-				    {
-					    i += 2;
-					    states.push_back(new State("ifTrue"));
-					    states.push_back(new State("ifFalse"));
+        if (tokens[i].item == "input")
+        {
+            stateBuffer = new State(tokens[i + 1].item);
+            states.push_back(stateBuffer);
+        }
+        if (tokens[i].item == "output")
+        {
+            stateBuffer = new State(tokens[i + 1].item);
+            states.push_back(stateBuffer);
+        }
+        if (tokens[i].item == "initial")
+        {
+            findState(tokens[i + 1].item)->Condition = atoi(tokens[i + 3].item.c_str());
+        }
+        if (tokens[i].item == "always")
+        {
+            i += 2;
+            stateBuffer = new State("alwaysOut");
+            states.push_back(stateBuffer);
+            gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
+            i += 2;
+            
+            if (tokens[i].item == "begin")
+            {
+                i++;
+                while(tokens[i].item != "end")
+                {
+                    if (tokens[i].item == "if")
+                    {
+                        i += 2;
+                        states.push_back(new State("ifTrue"));
+                        states.push_back(new State("ifFalse"));
 
-					    if (tokens[i + 2].item == "0")
-					    {
-						    stateBuffer = FalseCondition;
-					    }
-					    else if (tokens[i + 2].item == "1")
-					    {
-						    stateBuffer = TrueCondition;
-					    }
-					    else
-					    {
-						    stateBuffer = findState(tokens[i + 2].item);
-					    }
+                        if (tokens[i + 2].item == "0")
+                        {
+                            stateBuffer = FalseCondition;
+                        }
+                        else if (tokens[i + 2].item == "1")
+                        {
+                            stateBuffer = TrueCondition;
+                        }
+                        else
+                        {
+                            stateBuffer = findState(tokens[i + 2].item);
+                        }
 
-					    if (tokens[i + 1].item == "==")
-					    {						
-						    gateBuffer = new IfEqGate(
-							    findState(tokens[i].item),
-							    stateBuffer,
-							    states[states.size() - 2],
-							    states[states.size() - 1]
-						    );
-					    }
+                        if (tokens[i + 1].item == "==")
+                        {						
+                            gateBuffer = new IfEqGate(
+                                findState(tokens[i].item),
+                                stateBuffer,
+                                states[states.size() - 2],
+                                states[states.size() - 1]
+                            );
+                        }
 
-					    if (tokens[i + 1].item == "!=")
-					    {
-						    gateBuffer = new IfNEqGate(
-							    findState(tokens[i].item),
-							    stateBuffer,
-							    states[states.size() - 2],
-							    states[states.size() - 1]
-						    );
-					    }
-					    gates.push_back(gateBuffer);
+                        if (tokens[i + 1].item == "!=")
+                        {
+                            gateBuffer = new IfNEqGate(
+                                findState(tokens[i].item),
+                                stateBuffer,
+                                states[states.size() - 2],
+                                states[states.size() - 1]
+                            );
+                        }
+                        gates.push_back(gateBuffer);
                         i += 3;
                         if (tokens[i].item == "then")
                         {
@@ -348,11 +348,11 @@ void ReadFile(const char* fileName)
                                     gates[gates.size() - 1]->FalseSignal);
                             }
                         }
-				    }
-				    i++;
-			    }
-		    }
-	    }
+                    }
+                    i++;
+                }
+            }
+        }
     }
 }
 
@@ -363,12 +363,12 @@ void Model(int modelTime, int timeStep)
     std::cout << "______" << std::endl;
     for (int i = 1; i <= modelTime; i += timeStep)
     {
-	    if (i % 10 == 0)
-	    {
-		    in->Condition = !in->Condition;
-	    }
+        if (i % 10 == 0)
+        {
+            in->Condition = !in->Condition;
+        }
 
-	    action->UpdateState();
-	    std::cout << std::setw(3) << in->Condition << std::setw(3) << out->Condition << std::endl;
+        action->UpdateState();
+        std::cout << std::setw(3) << in->Condition << std::setw(3) << out->Condition << std::endl;
     }
 }

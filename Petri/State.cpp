@@ -2,6 +2,6 @@
 
 State::State(std::string name)
 {
-	Condition = false;
-	Name = name;
+    Condition = false;
+    Name = name;
 }

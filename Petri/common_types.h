@@ -4,14 +4,14 @@
 
 enum StateType
 {
-	Input = 0,
-	Intermediate,
-	Output
+    Input = 0,
+    Intermediate,
+    Output
 };
 
 enum GateType
 {
-	Always = 0,
-	IfCondition,
-	IfAction
+    Always = 0,
+    IfCondition,
+    IfAction
 };

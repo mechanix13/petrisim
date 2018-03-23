@@ -5,11 +5,11 @@
 class IfNEqGate: public Gate
 {
 public:
-	State* TrueSignal;
-	State* FalseSignal;
+    State* TrueSignal;
+    State* FalseSignal;
 
-	IfNEqGate(State* lhs, State* rhs, State* trueSignal, State* falseSignal);
-	~IfNEqGate();
+    IfNEqGate(State* lhs, State* rhs, State* trueSignal, State* falseSignal);
+    ~IfNEqGate();
 
-	void PerformFunc();
+    void PerformFunc();
 };

@@ -7,10 +7,10 @@
 class ActionGate: public Gate
 {
 public:
-	std::string Action; 
+    std::string Action; 
 
-	ActionGate(State* input, State* output, std::string action);
-	~ActionGate();
+    ActionGate(State* input, State* output, std::string action);
+    ~ActionGate();
 
-	void PerformFunc();
+    void PerformFunc();
 };

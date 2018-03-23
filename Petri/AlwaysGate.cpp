@@ -5,28 +5,28 @@
 
 AlwaysGate::AlwaysGate(State* input, State* output)
 {
-	InputState = input;
-	OutputState = output;
+    InputState = input;
+    OutputState = output;
 
-	InputStateCond = InputState->Condition;
+    InputStateCond = InputState->Condition;
 }
 
 void AlwaysGate::PerformFunc()
 {
-	Action->PerformFunc();
+    Action->PerformFunc();
 }
 
 void AlwaysGate::UpdateState()
 {
-	if (InputState->Condition != InputStateCond)
-	{
-		OutputState->Condition = InputState->Condition;
-		PerformFunc();
-		InputStateCond = InputState->Condition;
-	}
+    if (InputState->Condition != InputStateCond)
+    {
+        OutputState->Condition = InputState->Condition;
+        PerformFunc();
+        InputStateCond = InputState->Condition;
+    }
 }
 
 void AlwaysGate::InitState()
 {
-	Action->InitState();
+    Action->InitState();
 }
