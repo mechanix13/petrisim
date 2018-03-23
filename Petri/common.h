@@ -22,11 +22,11 @@
 // TODO: global true and false state nodes
 
 struct token {
-	std::string item;
-	size_t      line,
-				line_orig,
-				pos,
-				pos_orig;
+    std::string item;
+    size_t      line,
+			    line_orig,
+			    pos,
+			    pos_orig;
 };
 
 std::vector<Gate*> gates;
@@ -40,8 +40,8 @@ State* FalseCondition;
 
 void ltrim(std::string &s)
 {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))));
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+	    std::not1(std::ptr_fun<int, int>(std::isspace))));
 }
 
 void clear_at_left(std::string &line) {
@@ -71,7 +71,7 @@ void clear_at_right(std::string &line) {
 }
 
 std::vector<token> tokenize(const char* fileName) {
-	std::vector<token> tokens;
+    std::vector<token> tokens;
 
     FILE *p_file = fopen(fileName, "rt");
     if(!p_file)
@@ -209,117 +209,166 @@ std::vector<token> tokenize(const char* fileName) {
 
 State* findState(std::string name)
 {
-	for (int i = 0; i < states.size(); i++)
-	{
-		if (states[i]->Name == name)
-		{
-			return states[i];
-		}
-	}
+    for (int i = 0; i < states.size(); i++)
+    {
+	    if (states[i]->Name == name)
+	    {
+		    return states[i];
+	    }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 void ReadFile(const char* fileName)
 {
-	State* stateBuffer;
-	Gate*  gateBuffer;
-	std::vector<token> tokens = tokenize(fileName);
-	for (int i = 0; i < tokens.size(); i++)
-	{
-		std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
-	}
+    State* stateBuffer;
+    Gate*  gateBuffer;
+    std::vector<token> tokens = tokenize(fileName);
+    for (int i = 0; i < tokens.size(); i++)
+    {
+	    std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
+    }
 	
-	// TODO: walk around tokens
-	for (int i = 0; i < tokens.size(); i++)
-	{
-		if (tokens[i].item == "input")
-		{
-			stateBuffer = new State(tokens[i + 1].item);
-			states.push_back(stateBuffer);
-		}
-		if (tokens[i].item == "output")
-		{
-			stateBuffer = new State(tokens[i + 1].item);
-			states.push_back(stateBuffer);
-		}
-		if (tokens[i].item == "initial")
-		{
-			findState(tokens[i + 1].item)->Condition = atoi(tokens[i + 3].item.c_str());
-		}
-		if (tokens[i].item == "always")
-		{
-			i += 2;
-			stateBuffer = new State("alwaysOut");
-			states.push_back(stateBuffer);
-			gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
-			i += 2;
+    // TODO: walk around tokens
+    for (int i = 0; i < tokens.size(); i++)
+    {
+	    if (tokens[i].item == "input")
+	    {
+		    stateBuffer = new State(tokens[i + 1].item);
+		    states.push_back(stateBuffer);
+	    }
+	    if (tokens[i].item == "output")
+	    {
+		    stateBuffer = new State(tokens[i + 1].item);
+		    states.push_back(stateBuffer);
+	    }
+	    if (tokens[i].item == "initial")
+	    {
+		    findState(tokens[i + 1].item)->Condition = atoi(tokens[i + 3].item.c_str());
+	    }
+	    if (tokens[i].item == "always")
+	    {
+		    i += 2;
+		    stateBuffer = new State("alwaysOut");
+		    states.push_back(stateBuffer);
+		    gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
+		    i += 2;
 			
-			if (tokens[i].item == "begin")
-			{
-				i++;
-				while(tokens[i].item != "end")
-				{
-					if (tokens[i].item == "if")
-					{
-						i++;
-						states.push_back(new State("ifTrue"));
-						states.push_back(new State("ifFalse"));
+		    if (tokens[i].item == "begin")
+		    {
+			    i++;
+			    while(tokens[i].item != "end")
+			    {
+				    if (tokens[i].item == "if")
+				    {
+					    i += 2;
+					    states.push_back(new State("ifTrue"));
+					    states.push_back(new State("ifFalse"));
 
-						if (tokens[i + 2].item == "0")
-						{
-							stateBuffer = FalseCondition;
-						}
-						else if (tokens[i + 2].item == "1")
-						{
-							stateBuffer = TrueCondition;
-						}
-						else
-						{
-							stateBuffer = findState(tokens[i + 2].item);
-						}
+					    if (tokens[i + 2].item == "0")
+					    {
+						    stateBuffer = FalseCondition;
+					    }
+					    else if (tokens[i + 2].item == "1")
+					    {
+						    stateBuffer = TrueCondition;
+					    }
+					    else
+					    {
+						    stateBuffer = findState(tokens[i + 2].item);
+					    }
 
-						if (tokens[i + 1].item == "==")
-						{						
-							gateBuffer = new IfEqGate(
-								findState(tokens[i].item),
-								stateBuffer,
-								states[states.size() - 2],
-								states[states.size() - 1]
-							);
-						}
+					    if (tokens[i + 1].item == "==")
+					    {						
+						    gateBuffer = new IfEqGate(
+							    findState(tokens[i].item),
+							    stateBuffer,
+							    states[states.size() - 2],
+							    states[states.size() - 1]
+						    );
+					    }
 
-						if (tokens[i + 1].item == "!=")
-						{
-							gateBuffer = new IfNEqGate(
-								findState(tokens[i].item),
-								stateBuffer,
-								states[states.size() - 2],
-								states[states.size() - 1]
-							);
-						}
-						gates.push_back(gateBuffer);
-					}
-					i++;
-				}
-			}
-		}
-	}
+					    if (tokens[i + 1].item == "!=")
+					    {
+						    gateBuffer = new IfNEqGate(
+							    findState(tokens[i].item),
+							    stateBuffer,
+							    states[states.size() - 2],
+							    states[states.size() - 1]
+						    );
+					    }
+					    gates.push_back(gateBuffer);
+                        i += 3;
+                        if (tokens[i].item == "then")
+                        {
+                            if (tokens[i + 1].item != "begin")
+                            {
+                                i++;
+                                if (tokens[i + 2].item == "0")
+                                {
+                                    stateBuffer = FalseCondition;
+                                }
+                                else if (tokens[i + 2].item == "1")
+                                {
+                                    stateBuffer = TrueCondition;
+                                }
+                                else
+                                {
+                                    stateBuffer = findState(tokens[i + 2].item);
+                                }
+
+                                gateBuffer = new AssignGate(
+                                    findState(tokens[i].item),
+                                    stateBuffer,
+                                    gates[gates.size() - 1]->TrueSignal);
+                            }
+                        }
+                        if (tokens[i].item == "else")
+                        {
+                            if (tokens[i + 1].item != "begin")
+                            {
+                                i++;
+                                if (tokens[i + 2].item == "0")
+                                {
+                                    stateBuffer = FalseCondition;
+                                }
+                                else if (tokens[i + 2].item == "1")
+                                {
+                                    stateBuffer = TrueCondition;
+                                }
+                                else
+                                {
+                                    stateBuffer = findState(tokens[i + 2].item);
+                                }
+
+                                gateBuffer = new AssignGate(
+                                    findState(tokens[i].item),
+                                    stateBuffer,
+                                    gates[gates.size() - 1]->FalseSignal);
+                            }
+                        }
+				    }
+				    i++;
+			    }
+		    }
+	    }
+    }
 }
 
 void Model(int modelTime, int timeStep)
 {
-	action->InitState();
-	std::cout << std::setw(3) << "in " << std::setw(3) << "out" << std::endl;
-	std::cout << "______" << std::endl;
-	for (int i = 1; i <= modelTime; i += timeStep)
-	{
-		if (i % 10 == 0)
-		{
-			in->Condition = !in->Condition;
-		}
+    action->InitState();
+    std::cout << std::setw(3) << "in " << std::setw(3) << "out" << std::endl;
+    std::cout << "______" << std::endl;
+    for (int i = 1; i <= modelTime; i += timeStep)
+    {
+	    if (i % 10 == 0)
+	    {
+		    in->Condition = !in->Condition;
+	    }
 
-		action->UpdateState();
-		std::cout << std::setw(3) << in->Condition << std::setw(3) << out->Condition << std::endl;
-	}
+	    action->UpdateState();
+	    std::cout << std::setw(3) << in->Condition << std::setw(3) << out->Condition << std::endl;
+    }
 }
