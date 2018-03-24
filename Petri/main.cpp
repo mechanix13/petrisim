@@ -13,11 +13,7 @@ int main()
 
     ReadFile("inv.v");
 
-    /*Model(50, 1);
-
-    delete in;
-    delete out;
-    delete action;*/
+    Model(50, 1);
 
     return 0;
 }

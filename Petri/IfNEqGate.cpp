@@ -3,10 +3,12 @@
 #include <sstream>
 #include <string>
 
-IfNEqGate::IfNEqGate(State* lhs, State* rhs, State* trueSignal, State* falseSignal)
+IfNEqGate::IfNEqGate(State* lhs, State* rhs, State* inputSignal, State* trueSignal, State* falseSignal)
 {
     LHS = lhs;
     RHS = rhs;
+
+    InputState = inputSignal;
 
     TrueSignal = trueSignal;
     FalseSignal = falseSignal;
@@ -18,7 +20,7 @@ IfNEqGate::~IfNEqGate()
 
 void IfNEqGate::PerformFunc()
 {
-    if (LHS->Condition == RHS->Condition)
+    if (LHS->Condition != RHS->Condition)
     {
         TrueSignal->Condition = true;
         FalseSignal->Condition = false;
@@ -27,5 +29,18 @@ void IfNEqGate::PerformFunc()
     {
         FalseSignal->Condition = true;
         TrueSignal->Condition = false;
+    }
+}
+
+void IfNEqGate::InitState()
+{
+    PerformFunc();
+}
+
+void IfNEqGate::UpdateState()
+{
+    if (InputState->Condition == true)
+    {
+        PerformFunc();
     }
 }

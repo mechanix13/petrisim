@@ -9,4 +9,6 @@ public:
     ~AssignGate();
 
     void PerformFunc();
+    void InitState();
+    void UpdateState();
 };

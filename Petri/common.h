@@ -19,8 +19,6 @@
 #include "AlwaysGate.h"
 #include "ActionGate.h"
 
-// TODO: global true and false state nodes
-
 struct token {
     std::string item;
     size_t      line,
@@ -37,12 +35,6 @@ State*      out;
 AlwaysGate* action;
 State* TrueCondition;
 State* FalseCondition;
-
-void ltrim(std::string &s)
-{
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))));
-}
 
 void clear_at_left(std::string &line) {
     size_t pos = line.find_first_not_of(" \t\n");
@@ -225,21 +217,19 @@ void ReadFile(const char* fileName)
     State* stateBuffer;
     Gate*  gateBuffer;
     std::vector<token> tokens = tokenize(fileName);
-    for (int i = 0; i < tokens.size(); i++)
-    {
-        std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
-    }
     
     for (int i = 0; i < tokens.size(); i++)
     {
         if (tokens[i].item == "input")
         {
             stateBuffer = new State(tokens[i + 1].item);
+            in = stateBuffer;
             states.push_back(stateBuffer);
         }
         if (tokens[i].item == "output")
         {
             stateBuffer = new State(tokens[i + 1].item);
+            out = stateBuffer;
             states.push_back(stateBuffer);
         }
         if (tokens[i].item == "initial")
@@ -251,6 +241,7 @@ void ReadFile(const char* fileName)
             i += 2;
             stateBuffer = new State("alwaysOut");
             states.push_back(stateBuffer);
+
             gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
             gates.push_back(gateBuffer);
             i += 2;
@@ -263,6 +254,9 @@ void ReadFile(const char* fileName)
                     if (tokens[i].item == "if")
                     {
                         i += 2;
+
+                        State* signal = states[states.size() - 1];
+
                         State* TrueSignal = new State("ifTrue");
                         states.push_back(TrueSignal);
                         State* FalseSignal = new State("ifFalse");
@@ -286,6 +280,7 @@ void ReadFile(const char* fileName)
                             gateBuffer = new IfEqGate(
                                 findState(tokens[i].item),
                                 stateBuffer,
+                                signal,
                                 states[states.size() - 2],
                                 states[states.size() - 1]
                             );
@@ -296,6 +291,7 @@ void ReadFile(const char* fileName)
                             gateBuffer = new IfNEqGate(
                                 findState(tokens[i].item),
                                 stateBuffer,
+                                signal,
                                 states[states.size() - 2],
                                 states[states.size() - 1]
                             );
@@ -368,19 +364,37 @@ void ReadFile(const char* fileName)
     }
 }
 
+
+void init()
+{
+    for (int i = 0; i < gates.size(); i++)
+    {
+        gates[i]->InitState();
+    }
+}
+
+void update()
+{
+    for (int i = 0; i < gates.size(); i++)
+    {
+        gates[i]->UpdateState();
+    }
+}
+
 void Model(int modelTime, int timeStep)
 {
-    action->InitState();
+    init();
+
     std::cout << std::setw(3) << "in " << std::setw(3) << "out" << std::endl;
     std::cout << "______" << std::endl;
+
     for (int i = 1; i <= modelTime; i += timeStep)
     {
         if (i % 10 == 0)
         {
             in->Condition = !in->Condition;
         }
-
-        action->UpdateState();
+        update();
         std::cout << std::setw(3) << in->Condition << std::setw(3) << out->Condition << std::endl;
     }
 }

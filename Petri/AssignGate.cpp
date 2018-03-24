@@ -11,10 +11,20 @@ AssignGate::AssignGate(State* lhs, State* rhs, State* inputSignal, State* output
 
 void AssignGate::PerformFunc()
 {
-    if (InputState->Condition == true)
-    {
-        LHS->Condition = RHS->Condition;
-    }
+    LHS->Condition = RHS->Condition;
 
     OutputState->Condition = true;
+}
+
+void AssignGate::InitState()
+{
+    PerformFunc();
+}
+
+void AssignGate::UpdateState()
+{
+    if (InputState->Condition == true)
+    {
+        PerformFunc();
+    }
 }

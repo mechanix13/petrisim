@@ -13,20 +13,23 @@ AlwaysGate::AlwaysGate(State* input, State* output)
 
 void AlwaysGate::PerformFunc()
 {
-    Action->PerformFunc();
 }
 
 void AlwaysGate::UpdateState()
 {
     if (InputState->Condition != InputStateCond)
     {
-        OutputState->Condition = InputState->Condition;
-        PerformFunc();
+        OutputState->Condition = true;
         InputStateCond = InputState->Condition;
+    }
+    else
+    {
+        OutputState->Condition = false;
     }
 }
 
 void AlwaysGate::InitState()
 {
-    Action->InitState();
+    OutputState->Condition = true;
+    InputStateCond = InputState->Condition;
 }
