@@ -8,11 +8,6 @@ public:
     State* InputState;
     State* OutputState;
 
-    // dirty hack for 'if'-gates
-    // otherwise it's hard to extract needed states
-    State* TrueSignal;
-    State* FalseSignal;
-
     State* LHS;
     State* RHS;
     bool InputStateCond;

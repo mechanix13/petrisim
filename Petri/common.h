@@ -230,7 +230,6 @@ void ReadFile(const char* fileName)
         std::cout << "(" << tokens[i].line << ":" << tokens[i].pos << ") : " << tokens[i].item << std::endl;
     }
     
-    // TODO: walk around tokens
     for (int i = 0; i < tokens.size(); i++)
     {
         if (tokens[i].item == "input")
@@ -253,6 +252,7 @@ void ReadFile(const char* fileName)
             stateBuffer = new State("alwaysOut");
             states.push_back(stateBuffer);
             gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
+            gates.push_back(gateBuffer);
             i += 2;
             
             if (tokens[i].item == "begin")
@@ -263,8 +263,10 @@ void ReadFile(const char* fileName)
                     if (tokens[i].item == "if")
                     {
                         i += 2;
-                        states.push_back(new State("ifTrue"));
-                        states.push_back(new State("ifFalse"));
+                        State* TrueSignal = new State("ifTrue");
+                        states.push_back(TrueSignal);
+                        State* FalseSignal = new State("ifFalse");
+                        states.push_back(FalseSignal);
 
                         if (tokens[i + 2].item == "0")
                         {
@@ -299,7 +301,7 @@ void ReadFile(const char* fileName)
                             );
                         }
                         gates.push_back(gateBuffer);
-                        i += 3;
+                        i += 4;
                         if (tokens[i].item == "then")
                         {
                             if (tokens[i + 1].item != "begin")
@@ -318,10 +320,17 @@ void ReadFile(const char* fileName)
                                     stateBuffer = findState(tokens[i + 2].item);
                                 }
 
+                                states.push_back(new State("thenAssign"));
                                 gateBuffer = new AssignGate(
                                     findState(tokens[i].item),
                                     stateBuffer,
-                                    gates[gates.size() - 1]->TrueSignal);
+                                    TrueSignal,
+                                    states[states.size() - 1]);
+                                gates.push_back(gateBuffer);
+                                if (tokens[i + 4].item == "else")
+                                {
+                                    i += 4;
+                                }
                             }
                         }
                         if (tokens[i].item == "else")
@@ -342,10 +351,13 @@ void ReadFile(const char* fileName)
                                     stateBuffer = findState(tokens[i + 2].item);
                                 }
 
+                                states.push_back(new State("elseAssign"));
                                 gateBuffer = new AssignGate(
                                     findState(tokens[i].item),
                                     stateBuffer,
-                                    gates[gates.size() - 1]->FalseSignal);
+                                    FalseSignal,
+                                    states[states.size() - 1]);
+                                gates.push_back(gateBuffer);
                             }
                         }
                     }
