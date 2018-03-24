@@ -17,6 +17,6 @@ public:
     ~Gate();
 
     virtual void PerformFunc();
-    void UpdateState();
-    void InitState();
+    virtual void UpdateState();
+    virtual void InitState();
 };

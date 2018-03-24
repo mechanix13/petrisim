@@ -13,14 +13,15 @@ AlwaysGate::AlwaysGate(State* input, State* output)
 
 void AlwaysGate::PerformFunc()
 {
+    OutputState->Condition = true;
+    InputStateCond = InputState->Condition;
 }
 
 void AlwaysGate::UpdateState()
 {
     if (InputState->Condition != InputStateCond)
     {
-        OutputState->Condition = true;
-        InputStateCond = InputState->Condition;
+        PerformFunc();
     }
     else
     {
@@ -30,6 +31,5 @@ void AlwaysGate::UpdateState()
 
 void AlwaysGate::InitState()
 {
-    OutputState->Condition = true;
-    InputStateCond = InputState->Condition;
+    PerformFunc();
 }

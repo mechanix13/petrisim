@@ -24,5 +24,4 @@ void Gate::UpdateState()
 
 void Gate::InitState()
 {
-    PerformFunc();
 }
