@@ -5,7 +5,9 @@
 class AssignGate: public Gate
 {
 public:
-    AssignGate(State* lhs, State* rhs, State* inputSignal, State* outputSignal);
+    bool inversion;
+
+    AssignGate(State* lhs, State* rhs, State* inputSignal, State* outputSignal, bool inv);
     ~AssignGate();
 
     void PerformFunc();

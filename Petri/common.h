@@ -61,6 +61,14 @@ State* findState(std::string name)
 }
 void readAssign(int& i, const char* name, State* inputSignal)
 {
+    State* lhs = findState(tokens[i].item);
+    bool inv = false;
+
+    if (tokens[i + 2].item == "!")
+    {
+        inv = true;
+        i++;
+    }
     if (tokens[i + 2].item == "0")
     {
         stateBuffer = FalseCondition;
@@ -76,18 +84,17 @@ void readAssign(int& i, const char* name, State* inputSignal)
 
     states.push_back(new State(name));
     gateBuffer = new AssignGate(
-        findState(tokens[i].item),
+        lhs,
         stateBuffer,
         inputSignal,
-        states[states.size() - 1]);
+        states[states.size() - 1],
+        inv);
     gates.push_back(gateBuffer);
 }
 
-void readIf(int& i)
+void readIf(int& i, State* signal)
 {
     i += 2;
-
-    State* signal = states[states.size() - 1];
 
     State* TrueSignal = new State("ifTrue");
     states.push_back(TrueSignal);
@@ -140,10 +147,9 @@ void readIf(int& i)
                 readAssign(i, "thenAssign", TrueSignal);
                 i += 3;
             }
-            if (tokens[i + 1].item == "if")
+            if (tokens[i].item == "if")
             {
-                i++;
-                readIf(i);
+                readIf(i, TrueSignal);
             }
             if (tokens[i + 1].item == "else")
             {
@@ -164,7 +170,7 @@ void readIf(int& i)
             if (tokens[i + 1].item == "if")
             {
                 i++;
-                readIf(i);
+                readIf(i, FalseSignal);
             }
         }
     }
@@ -187,6 +193,10 @@ void initDumpFile(std::fstream& dump)
 
     for (int i = 0; i < inputStates.size(); i++)
     {
+        if (inputStates[i]->Name == "@")
+        {
+            continue;
+        }
         dump << "$var wire 1 " << codes[i] << " " << inputStates[i]->Name << " $end\n";
     }
     for (int i = 0; i < outputStates.size(); i++)
@@ -204,11 +214,16 @@ void dumpInitValues(std::fstream& dump)
 
     for (int i = 0; i < inputStates.size(); i++)
     {
+        if (inputStates[i]->Name == "@")
+        {
+            continue;
+        }
+
         dump << (int)inputStates[i]->Condition << codes[i] << "\n";
     }
     for (int i = 0; i < outputStates.size(); i++)
     {
-        dump << (int)outputStates[i]->Condition << codes[inputStates.size() + i] << " $end\n";
+        dump << (int)outputStates[i]->Condition << codes[inputStates.size() + i] << "\n";
     }
 
     dump << "$end\n";
@@ -406,6 +421,7 @@ void ReadFile(const char* fileName)
     State* stateBuffer;
     Gate*  gateBuffer;
     tokens = tokenize(fileName);
+    State* lastSignal;
     
     for (int i = 0; i < tokens.size(); i++)
     {
@@ -434,13 +450,34 @@ void ReadFile(const char* fileName)
         if (tokens[i].item == "always")
         {
             i += 2;
+
+            int alwaysMode = MODE_CHANGE;
+            if (tokens[i].item == "posedge")
+            {
+                alwaysMode = MODE_POSEDGE;
+                i++;
+            }
+            if (tokens[i].item == "negedge")
+            {
+                alwaysMode = MODE_NEGEDGE;
+                i++;
+            }
+
+            if (tokens[i].item == "@")
+            {
+                stateBuffer = new State("@");
+                states.push_back(stateBuffer);
+                inputStates.push_back(stateBuffer);
+            }
+
             stateBuffer = new State("alwaysOut");
             states.push_back(stateBuffer);
 
-            gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer);
+            gateBuffer = new AlwaysGate(findState(tokens[i].item), stateBuffer, alwaysMode);
             gates.push_back(gateBuffer);
             i += 2;
             
+            lastSignal = stateBuffer;
             if (tokens[i].item == "begin")
             {
                 i++;
@@ -448,13 +485,17 @@ void ReadFile(const char* fileName)
                 {
                     if (tokens[i].item == "if")
                     {
-                       readIf(i);
+                       readIf(i, lastSignal);
                     }
 
                     if (tokens[i].item == "=")
                     {
-                        readAssign(i, "assignation", gates[gates.size() - 1]->OutputState);
+                        i--;
+                        readAssign(i, "assignation", lastSignal);
+                        i += 3;
                     }
+
+                    lastSignal = gates[gates.size() - 1]->OutputState;
                     i++;
                 }
             }
@@ -494,20 +535,35 @@ void Model(int modelTime, int timeStep)
     for (int i = 1; i <= modelTime; i += timeStep)
     {
         dump << "#" << i << "\n";
-        if (i % 10 == 0)
+        for (int k = 0; k < inputStates.size(); k++)
         {
-            in->Condition = !in->Condition;
+            if (inputStates[k]->Name == "@")
+            {
+                inputStates[k]->Condition = !inputStates[k]->Condition;
+            }
+        }
+        if (i % 3 == 0)
+        {
+            inputStates[0]->Condition = !inputStates[0]->Condition;
+        }
+        if (i % 6 == 0)
+        {
+            inputStates[1]->Condition = !inputStates[1]->Condition;
         }
         update();
         for (int i = 0; i < inputStates.size(); i++)
         {
+            if (inputStates[i]->Name == "@")
+            {
+                continue;
+            }
             dump << (int)inputStates[i]->Condition << codes[i] << "\n";
         }
         for (int i = 0; i < outputStates.size(); i++)
         {
-            dump << (int)outputStates[i]->Condition << codes[inputStates.size() + i] << " $end\n";
+            dump << (int)outputStates[i]->Condition << codes[inputStates.size() + i] << "\n";
         }
     }
-
+    std::cout << "Done" << std::endl;
     dump.close();
 }

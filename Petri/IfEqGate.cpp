@@ -43,4 +43,9 @@ void IfEqGate::UpdateState()
     {
         PerformFunc();
     }
+    else
+    {
+        TrueSignal->Condition = false;
+        FalseSignal->Condition = false;
+    }
 }

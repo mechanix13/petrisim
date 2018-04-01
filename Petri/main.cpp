@@ -11,9 +11,9 @@ int main()
     FalseCondition = new State("false");
     FalseCondition->Condition = false;
 
-    ReadFile("inv.v");
+    ReadFile("reg.v");
 
-    Model(50, 1);
+    Model(200, 1);
 
     return 0;
 }

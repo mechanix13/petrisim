@@ -3,10 +3,11 @@
 #include <sstream>
 #include <string>
 
-AlwaysGate::AlwaysGate(State* input, State* output)
+AlwaysGate::AlwaysGate(State* input, State* output, int _mode)
 {
     InputState = input;
     OutputState = output;
+    mode = _mode;
 
     InputStateCond = InputState->Condition;
 }
@@ -19,7 +20,22 @@ void AlwaysGate::PerformFunc()
 
 void AlwaysGate::UpdateState()
 {
-    if (InputState->Condition != InputStateCond)
+    bool condition = false;
+    switch(mode)
+    {
+        case MODE_CHANGE:
+            condition = InputState->Condition != InputStateCond;
+            break;
+        case MODE_POSEDGE:
+            condition = (InputStateCond == false) && (InputState->Condition == true);
+            break;
+        case MODE_NEGEDGE:
+            condition = (InputStateCond == true) && (InputState->Condition == false);
+            break;
+        default:
+            return;
+    }
+    if (condition)
     {
         PerformFunc();
     }
@@ -27,6 +43,8 @@ void AlwaysGate::UpdateState()
     {
         OutputState->Condition = false;
     }
+
+    InputStateCond = InputState->Condition;
 }
 
 void AlwaysGate::InitState()
